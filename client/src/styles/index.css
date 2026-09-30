@@ -1,0 +1,219 @@
+﻿@import "tailwindcss";
+@variant dark (&:where([data-dark="true"], [data-dark="true"] *));
+
+/* Base Light Mode - Grayscale/Neutral base */
+:root {
+  --neu-bg: #f5f5f5;
+  --neu-surface: #ffffff;
+  --neu-surface-raised: #e5e5e5;
+  --neu-shadow-dark: #d4d4d4;
+  --neu-shadow-light: #ffffff;
+
+  --text-main: #171717;
+  --text-muted: #737373;
+  --text-subtle: #404040;
+  --border-subtle: #d4d4d4;
+  --table-border: #e5e5e5;
+  --table-hover: rgba(0, 0, 0, 0.05);
+
+  --accent-primary: #404040;
+  --accent-secondary: #737373;
+  
+  --card-radius: 1rem;
+  --card-border: 1px solid var(--border-subtle);
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --card-backdrop: none;
+  
+  --metric-temp: #ef4444;
+  --metric-pressure: #0ea5e9;
+  --metric-humidity: #10b981;
+  --metric-wind: #8b5cf6;
+  --metric-alt: #3b82f6;
+}
+
+/* Base Dark Mode - Grayscale (No Blue!) */
+[data-dark="true"] {
+  --neu-bg: #111111;
+  --neu-surface: #1f1f1f;
+  --neu-surface-raised: #262626;
+  --neu-shadow-dark: #0a0a0a;
+  --neu-shadow-light: #303030;
+
+  --text-main: #ffffff;
+  --text-muted: #d4d4d4;
+  --text-subtle: #a3a3a3;
+  --border-subtle: #525252;
+  --table-border: #262626;
+  --table-hover: rgba(255, 255, 255, 0.1);
+
+  --accent-primary: #ffffff;
+  --accent-secondary: #e5e5e5;
+  
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.6);
+  
+  --metric-temp: #f87171;
+  --metric-pressure: #38bdf8;
+  --metric-humidity: #34d399;
+  --metric-wind: #a78bfa;
+  --metric-alt: #60a5fa;
+}
+
+/* 1. GLASSMORPHISM */
+[data-style="glass"] {
+  --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  --card-backdrop: blur(12px);
+  --card-border: 1px solid rgba(255, 255, 255, 0.2);
+}
+[data-style="glass"][data-dark="true"] {
+  --card-border: 1px solid rgba(255, 255, 255, 0.05);
+  --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  --neu-surface: rgba(31, 31, 31, 0.6);
+  --neu-bg: #111111;
+  background-image: radial-gradient(circle at top right, #262626, #111111);
+}
+[data-style="glass"]:not([data-dark="true"]) {
+  --neu-surface: rgba(255, 255, 255, 0.6);
+  background-image: radial-gradient(circle at top right, #ffffff, #e5e5e5);
+}
+
+/* 2. NEUMORPHISM */
+[data-style="neu"] {
+  --card-radius: 1.25rem;
+  --card-border: none;
+  --card-shadow: 8px 8px 16px var(--neu-shadow-dark), -8px -8px 16px var(--neu-shadow-light);
+}
+
+/* 3. CLAYMORPHISM */
+[data-style="clay"] {
+  --card-radius: 2rem;
+  --card-border: none;
+  --card-shadow: 8px 8px 16px rgba(0,0,0,0.1), inset -4px -4px 8px rgba(0,0,0,0.05), inset 4px 4px 8px rgba(255,255,255,0.8);
+}
+[data-style="clay"][data-dark="true"] {
+  --card-shadow: 8px 8px 16px rgba(0,0,0,0.4), inset -4px -4px 8px rgba(0,0,0,0.3), inset 4px 4px 8px rgba(255,255,255,0.1);
+}
+
+/* 4. MATERIAL DESIGN */
+[data-style="material"] {
+  --card-radius: 0.25rem;
+  --card-border: none;
+  --card-shadow: 0 2px 1px -1px rgba(0,0,0,0.2), 0 1px 1px 0 rgba(0,0,0,0.14), 0 1px 3px 0 rgba(0,0,0,0.12);
+}
+[data-style="material"][data-dark="true"] {
+  --card-shadow: 0 2px 1px -1px rgba(0,0,0,0.6), 0 1px 1px 0 rgba(0,0,0,0.4);
+}
+
+/* 5. BENTO UI */
+[data-style="bento"] {
+  --card-radius: 1.5rem;
+  --card-border: 1px solid var(--border-subtle);
+  --card-shadow: none;
+}
+
+/* COMPONENT MAPPINGS */
+body {
+  background-color: var(--neu-bg);
+  color: var(--text-main);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.neu-flat {
+  background: var(--neu-surface);
+  border-radius: var(--card-radius);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: var(--card-backdrop);
+  transition: all 0.3s ease;
+}
+
+.neu-pressed {
+  background: var(--neu-surface-raised);
+  border-radius: calc(var(--card-radius) * 0.75);
+  border: var(--card-border);
+  box-shadow: inset 2px 2px 5px var(--neu-shadow-dark), inset -2px -2px 5px var(--neu-shadow-light);
+  transition: all 0.3s ease;
+}
+[data-style="material"] .neu-pressed,
+[data-style="bento"] .neu-pressed {
+  box-shadow: none;
+}
+[data-style="glass"] .neu-pressed {
+  box-shadow: none;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.neu-button {
+  background: var(--neu-surface);
+  border-radius: var(--card-radius);
+  border: var(--card-border);
+  box-shadow: var(--card-shadow);
+  color: var(--text-main);
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.neu-button:hover {
+  transform: translateY(-2px);
+}
+.neu-button:active {
+  box-shadow: inset 2px 2px 5px var(--neu-shadow-dark), inset -2px -2px 5px var(--neu-shadow-light);
+  transform: translateY(0);
+}
+[data-style="bento"] .neu-button {
+  background: var(--neu-surface-raised);
+}
+
+.grad-text-temp { color: var(--metric-temp); }
+.grad-text-pressure { color: var(--metric-pressure); }
+.grad-text-humidity { color: var(--metric-humidity); }
+.grad-text-wind { color: var(--metric-wind); }
+.grad-text-altitude { color: var(--metric-alt); }
+.grad-text-primary { color: var(--accent-primary); }
+
+.grad-orb {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.orb-temp { background: linear-gradient(135deg, var(--metric-temp), #ffb3b3); color: white; }
+.orb-pressure { background: linear-gradient(135deg, var(--metric-pressure), #b3e0ff); color: white; }
+.orb-humidity { background: linear-gradient(135deg, var(--metric-humidity), #b3ffb3); color: white; }
+.orb-wind { background: linear-gradient(135deg, var(--metric-wind), #e6b3ff); color: white; }
+.orb-altitude { background: linear-gradient(135deg, var(--metric-alt), #b3d9ff); color: white; }
+.orb-primary { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; }
+
+.active { color: var(--accent-primary) !important; font-weight: bold; }
+
+[data-dark="true"] .dark-active-text { color: #000000 !important; }
+[data-dark="true"] .dark-active-bg { color: #000000 !important; }
+
+/* Hide Scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Current Location Pulsating Dot */
+.pulsating-dot {
+  position: relative;
+}
+.pulsating-dot .circle {
+  width: 12px; height: 12px; background: #ef4444; border-radius: 50%; position: absolute; top: 6px; left: 6px;
+  box-shadow: 0 0 4px rgba(0,0,0,0.4);
+}
+.pulsating-dot .ring {
+  width: 24px; height: 24px; border: 3px solid #ef4444; border-radius: 50%; position: absolute; top: 0; left: 0;
+  animation: pulsate 1.5s ease-out infinite;
+}
+@keyframes pulsate {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}

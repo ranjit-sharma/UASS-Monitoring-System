@@ -1,0 +1,18 @@
+{
+  "name": "uass-monitoring-system",
+  "version": "1.0.0",
+  "description": "UASS Real-Time Monitoring and Visualization System — monorepo root",
+  "private": true,
+  "scripts": {
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "start:server": "npm run start --prefix server",
+    "test:server": "npm run test --prefix server",
+    "test:client": "npm run test --prefix client",
+    "seed": "npm run seed --prefix server",
+    "install:all": "npm install --prefix server && npm install --prefix client"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
