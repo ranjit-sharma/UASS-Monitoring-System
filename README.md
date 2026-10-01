@@ -8,15 +8,15 @@ A production-oriented MERN stack web application for monitoring and visualizing 
 
 ## Features
 
-- ðŸ” **Secure authentication** â€” JWT in HTTP-only cookies, bcrypt password hashing
-- ðŸ‘¥ **Role-based access control** â€” Admin, Operator, Viewer with backend enforcement
-- ðŸ“Š **Real-time dashboard** â€” Temperature, pressure, humidity, and altitude profile charts
-- âš¡ **Live data via Socket.IO** â€” Authenticated websocket feed for real-time observations
-- ðŸ“œ **Historical observations** â€” Paginated table with date, altitude, and source filtering
-- ðŸ“¤ **CSV export** â€” Filtered observation export (up to 10,000 records)
-- ðŸŽ›ï¸ **Data collection control** â€” Start/stop simulated sounding sessions
-- ðŸ” **Audit logs** â€” Full security event history for admin review
-- ðŸ›¡ï¸ **Security-first** â€” Helmet, CORS, rate limiting, Zod validation, NoSQL injection prevention
+-  **Secure authentication** â€” JWT in HTTP-only cookies, bcrypt password hashing
+-  **Role-based access control** â€” Admin, Operator, Viewer with backend enforcement
+-  **Real-time dashboard** â€” Temperature, pressure, humidity, and altitude profile charts
+-  **Live data via Socket.IO** â€” Authenticated websocket feed for real-time observations
+-  **Historical observations** â€” Paginated table with date, altitude, and source filtering
+-  **CSV export** â€” Filtered observation export (up to 10,000 records)
+-  **Data collection control** â€” Start/stop simulated sounding sessions
+-  **Audit logs** â€” Full security event history for admin review
+-  **Security-first** â€” Helmet, CORS, rate limiting, Zod validation, NoSQL injection prevention
 
 ---
 
