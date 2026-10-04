@@ -66,12 +66,12 @@ A production-oriented MERN stack web application for monitoring and visualizing 
 
 ```
 UASS-Monitoring-System/
-â”œâ”€â”€ client/          # React frontend (Vite)
-â”œâ”€â”€ server/          # Node.js/Express backend
-â”œâ”€â”€ docs/            # API, architecture, and data format documentation
-â”œâ”€â”€ .gitignore
-â”œâ”€â”€ package.json     # Root convenience scripts
-â””â”€â”€ README.md
+ client/          # React frontend (Vite)
+ server/          # Node.js/Express backend
+ docs/            # API, architecture, and data format documentation
+ .gitignore
+ package.json     # Root convenience scripts
+ README.md
 ```
 
 ### Backend Architecture (MVC)
