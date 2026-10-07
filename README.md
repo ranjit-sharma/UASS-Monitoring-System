@@ -230,6 +230,12 @@ Create a **Web Service** from the repository with these settings:
 | Build Command | `npm install` |
 | Start Command | `npm start` |
 
+If you leave the Render Root Directory empty, the repository root now supports
+the same commands: `npm install` installs the root package, `npm run build`
+installs the server dependencies, and `npm start` starts the server. The
+preferred configuration is still Root Directory `server`, where `npm install`
+and `npm start` run directly against the backend package.
+
 Do not use `npm run dev` on Render; it starts nodemon and is intended only for
 local development. Render provides the `PORT` environment variable, which the
 server reads automatically.
