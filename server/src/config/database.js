@@ -5,6 +5,10 @@ import { logger } from '../utils/logger.js';
 export async function connectDatabase(uri) {
   const connectionUri = uri || process.env.MONGODB_URI;
 
+  if (!connectionUri) {
+    throw new Error('MONGODB_URI is required. Configure the MongoDB Atlas connection string in server/.env.');
+  }
+
   // Sanitize the URI for logging (hide credentials)
   const safeUri = connectionUri.replace(/\/\/[^@]+@/, '//***:***@');
 

@@ -13,7 +13,7 @@
     "seed:observations": "node src/scripts/seedObservations.js"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20.19.0"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

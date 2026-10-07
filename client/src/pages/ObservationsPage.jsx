@@ -25,13 +25,8 @@ export function ObservationsPage() {
   const [deleteId, setDeleteId] = useState(null);
   const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);
   const [isDeleteFilterOpen, setIsDeleteFilterOpen] = useState(false);
-  const [isShowingDeleted, setIsShowingDeleted] = useState(false);
 
   function handlePageChange(page) { updateParams((prev) => ({ ...prev, page })); }
-  function toggleShowDeleted() {
-    setIsShowingDeleted(!isShowingDeleted);
-    updateParams(prev => ({ ...prev, page: 1, isDeleted: !isShowingDeleted }));
-  }
 
   async function handleDeleteFiltered() {
     try {
@@ -42,11 +37,6 @@ export function ObservationsPage() {
       refetch();
     } catch (err) { toast.error(err.message); }
     finally { setIsDeleteFilterOpen(false); }
-  }
-
-  async function handleRestore(id) {
-    try { await observationService.restore(id); toast.success('Observation restored'); refetch(); }
-    catch (err) { toast.error(err.message); }
   }
 
   function handleFilterChange(e) {
@@ -133,14 +123,6 @@ export function ObservationsPage() {
           </select>
         </div>
 
-        {canDelete && (
-          <div className="flex items-end gap-3 ml-auto">
-            <button onClick={toggleShowDeleted} className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${isShowingDeleted ? 'bg-orange-500/20 text-orange-400 border border-orange-500/50' : 'neu-button text-subtle'}`}>
-              {isShowingDeleted ? 'Exit Trash' : 'Show Trash'}
-            </button>
-            
-          </div>
-        )}
       </div>
 
       {isLoading ? <LoadingSpinner className="mt-12" />
@@ -176,17 +158,10 @@ export function ObservationsPage() {
                     <td className="text-right px-4 py-3"><Badge label={obs.source} variant={obs.source} /></td>
                     {canDelete && (
                       <td className="px-4 py-3 text-right">
-                        {isShowingDeleted ? (
-                          <button onClick={() => handleRestore(obs._id)}
-                                  className="text-emerald-500/80 hover:text-emerald-500 text-xs font-semibold transition-colors">
-                            Restore
-                          </button>
-                        ) : (
-                          <button onClick={() => setDeleteId(obs._id)}
-                                  className="text-red-500/80 hover:text-red-500 text-xs font-semibold transition-colors">
-                            Delete
-                          </button>
-                        )}
+                        <button onClick={() => setDeleteId(obs._id)}
+                                className="text-red-500/80 hover:text-red-500 text-xs font-semibold transition-colors">
+                          Delete
+                        </button>
                       </td>
                     )}
                   </tr>
@@ -213,7 +188,6 @@ export function ObservationsPage() {
     </div>
   );
 }
-
 
 
 

@@ -7,6 +7,11 @@ export const authService = {
     return res.data.data; // user object
   },
 
+  async register({ name, email, password, role }) {
+    const res = await api.post('/auth/register', { name, email, password, role });
+    return res.data.data;
+  },
+
   async logout() {
     await api.post('/auth/logout');
   },

@@ -1,5 +1,5 @@
 ﻿// src/modules/auth/auth.controller.js
-import { loginUser, logoutUser } from '../services/auth.service.js';
+import { loginUser, logoutUser, registerUser } from '../services/auth.service.js';
 import { env } from '../config/env.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { sendSuccess } from '../utils/response.js';
@@ -22,6 +22,20 @@ export const login = asyncHandler(async (req, res) => {
   sendSuccess(res, 200, 'Login successful', user);
 });
 
+export const register = asyncHandler(async (req, res) => {
+  const { name, email, password, role } = req.body;
+  const { token, user } = await registerUser({
+    name,
+    email,
+    password,
+    role,
+    ipAddress: req.ip,
+  });
+
+  res.cookie(env.cookieName, token, COOKIE_OPTIONS);
+  sendSuccess(res, 201, 'Account created successfully', user);
+});
+
 export const logout = asyncHandler(async (req, res) => {
   await logoutUser(req.user._id);
 
@@ -37,4 +51,3 @@ export const logout = asyncHandler(async (req, res) => {
 export const getMe = asyncHandler(async (req, res) => {
   sendSuccess(res, 200, 'Authenticated', req.user);
 });
-

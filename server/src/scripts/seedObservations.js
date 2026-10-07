@@ -9,7 +9,10 @@ dotenv.config();
 
 async function seed() {
   try {
-    const mongoUri = process.env.MONGODB_URI || env?.mongodbUri || 'mongodb://localhost:27017/uass_dev';
+    const mongoUri = process.env.MONGODB_URI || env.mongoUri;
+    if (!mongoUri) {
+      throw new Error('MONGODB_URI is required. Configure the MongoDB Atlas connection string in server/.env.');
+    }
     await mongoose.connect(mongoUri, { sanitizeFilter: true });
     console.log('Connected to MongoDB:', mongoUri);
 
@@ -61,4 +64,3 @@ async function seed() {
 }
 
 seed();
-

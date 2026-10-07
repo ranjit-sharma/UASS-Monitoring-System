@@ -11,16 +11,19 @@ import toast from 'react-hot-toast';
 import { Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 const loginSchema = z.object({
+  name: z.string().optional(),
   email: z.string().email('Invalid email address').max(254),
   password: z.string().min(1, 'Password is required').max(128),
+  role: z.enum(['admin', 'operator', 'viewer']).optional(),
 });
 
 export function LoginPage() {
-  const { login } = useAuth();
+  const { login, register: registerAccount } = useAuth();
   const { dataSourceMode, setDataSourceMode } = useDataSource();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
   
   const {
     register,
@@ -31,8 +34,22 @@ export function LoginPage() {
   async function onSubmit(data) {
     setLoginError('');
     try {
-      await login(data);
-      toast.success('Successfully logged in!');
+      if (isRegistering) {
+        if (!data.name?.trim() || data.name.trim().length < 2) {
+          setLoginError('Name must be at least 2 characters');
+          return;
+        }
+        if (data.password.length < 8) {
+          setLoginError('Password must be at least 8 characters');
+          return;
+        }
+        await registerAccount({ ...data, name: data.name.trim() });
+        toast.success('Account created successfully!');
+      } else {
+        const { name, role, ...credentials } = data;
+        await login(credentials);
+        toast.success('Successfully logged in!');
+      }
       navigate('/dashboard', { replace: true });
     } catch (err) {
       setLoginError(err.message || 'Invalid email or password');
@@ -85,8 +102,14 @@ export function LoginPage() {
           </div>
 
           <div className="mb-8">
-            <h2 className="text-main text-2xl font-bold tracking-tight">Welcome back</h2>
-            <p className="text-subtle text-sm mt-1">Please enter your credentials to access the system.</p>
+            <h2 className="text-main text-2xl font-bold tracking-tight">
+              {isRegistering ? 'Create your account' : 'Welcome back'}
+            </h2>
+            <p className="text-subtle text-sm mt-1">
+              {isRegistering
+                ? 'Create a viewer account to access the monitoring system.'
+                : 'Please enter your credentials to access the system.'}
+            </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
@@ -94,6 +117,37 @@ export function LoginPage() {
               <div className="bg-red-500/10 text-red-500 p-3 rounded-xl flex items-center gap-3 text-sm font-semibold border border-red-500/20">
                 <AlertCircle size={18} className="shrink-0" />
                 <span>{loginError}</span>
+              </div>
+            )}
+            {isRegistering && (
+              <div>
+                <label htmlFor="name" className="block text-[11px] text-subtle uppercase tracking-wider mb-2 font-bold">
+                  Full Name
+                </label>
+                <input
+                  id="name"
+                  type="text"
+                  autoComplete="name"
+                  {...register('name')}
+                  className="neu-pressed w-full px-4 py-3.5 text-main text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all"
+                  placeholder="Your name"
+                />
+              </div>
+            )}
+            {isRegistering && import.meta.env.DEV && (
+              <div>
+                <label htmlFor="role" className="block text-[11px] text-subtle uppercase tracking-wider mb-2 font-bold">
+                  Account Role (Development Only)
+                </label>
+                <select
+                  id="role"
+                  {...register('role')}
+                  className="neu-pressed w-full px-4 py-3.5 text-main text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)]"
+                >
+                  <option value="viewer">Viewer</option>
+                  <option value="operator">Operator</option>
+                  <option value="admin">Admin</option>
+                </select>
               </div>
             )}
             <div>
@@ -121,7 +175,7 @@ export function LoginPage() {
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  autoComplete="current-password"
+                  autoComplete={isRegistering ? 'new-password' : 'current-password'}
                   {...register('password')}
                   className="neu-pressed w-full px-4 py-3.5 pr-12 text-main text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--accent-primary)] focus:border-transparent transition-all"
                   placeholder="*************"
@@ -134,7 +188,7 @@ export function LoginPage() {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              {errors.password && (
+              {errors.password && !isRegistering && (
                 <p className="mt-1.5 text-red-500 text-xs font-semibold">{errors.password.message}</p>
               )}
             </div>
@@ -177,16 +231,27 @@ export function LoginPage() {
               className="neu-button w-full py-3.5 mt-6 text-sm font-bold border-none rounded-xl disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-[var(--accent-primary)]/30"
               style={{ background: 'var(--accent-primary)', color: 'var(--neu-bg)' }}
             >
-              {isSubmitting ? 'Signing' : 'Sign In'}
+              {isSubmitting
+                ? isRegistering ? 'Creating account...' : 'Signing in...'
+                : isRegistering ? 'Create account' : 'Sign In'}
             </button>
           </form>
+          <button
+            type="button"
+            onClick={() => {
+              setIsRegistering((current) => !current);
+              setLoginError('');
+            }}
+            className="mt-5 text-sm font-semibold text-[var(--accent-primary)] hover:underline"
+          >
+            {isRegistering
+              ? 'Already have an account? Sign in'
+              : 'Need an account? Create one'}
+          </button>
         </div>
       </div>
     </div>
   );
 }
-
-
-
 
 

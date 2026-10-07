@@ -8,6 +8,22 @@
 
 ## Authentication
 
+### POST /auth/register
+Creates a new viewer account and sets an HTTP-only JWT cookie. Public
+registration cannot create admin or operator accounts.
+
+**Request body:**
+```json
+{
+  "name": "New User",
+  "email": "user@example.com",
+  "password": "your-password"
+}
+```
+
+The password must contain 8–128 characters. The new account is signed in
+immediately after creation.
+
 ### POST /auth/login
 Authenticates a user and sets an HTTP-only JWT cookie.
 

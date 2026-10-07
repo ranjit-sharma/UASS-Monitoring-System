@@ -1,277 +1,436 @@
-﻿# UASS Real-Time Monitoring and Visualization System
+# UASS Monitoring System
 
-A production-oriented MERN stack web application for monitoring and visualizing **Upper Air Sounding System (UASS)** atmospheric observations. Supports simulated real-time data collection, historical data exploration, role-based access control, and a professional scientific monitoring dashboard.
+UASS Monitoring System is a full-stack web application for monitoring Upper Air
+Sounding System telemetry. It provides authenticated dashboards for live
+atmospheric observations, sounding sessions, flight tracking, historical
+analysis, CSV export, user administration, and audit review.
 
-> **Note:** This application uses **simulated data** for development and demonstration. It does not connect to real UASS hardware. See [Future Hardware Integration](#future-hardware-integration) for how to add a real adapter.
+The repository contains a React/Vite client and an Express/MongoDB server. The
+application can run with the built-in simulator or accept telemetry from
+external equipment over UDP/TCP LAN listeners.
 
----
+> **Development status:** The simulator is ready for local development and
+> demonstration. Hardware ingestion is implemented as a telemetry receiver,
+> but the application does not include a device-specific radiosonde driver.
 
 ## Features
 
-- ðŸ” **Secure authentication** â€” JWT in HTTP-only cookies, bcrypt password hashing
-- ðŸ‘¥ **Role-based access control** â€” Admin, Operator, Viewer with backend enforcement
-- ðŸ“Š **Real-time dashboard** â€” Temperature, pressure, humidity, and altitude profile charts
-- âš¡ **Live data via Socket.IO** â€” Authenticated websocket feed for real-time observations
-- ðŸ“œ **Historical observations** â€” Paginated table with date, altitude, and source filtering
-- ðŸ“¤ **CSV export** â€” Filtered observation export (up to 10,000 records)
-- ðŸŽ›ï¸ **Data collection control** â€” Start/stop simulated sounding sessions
-- ðŸ” **Audit logs** â€” Full security event history for admin review
-- ðŸ›¡ï¸ **Security-first** â€” Helmet, CORS, rate limiting, Zod validation, NoSQL injection prevention
+- Dashboard summary and latest-observation views
+- Live monitoring with Socket.IO observation updates
+- Temperature, pressure, humidity, altitude, and wind visualizations
+- Flight tracking and map-based telemetry display
+- Historical observation filtering, pagination, editing, deletion, restoration,
+  and CSV export
+- Start/stop simulated data-collection sessions
+- Optional UDP and TCP telemetry ingestion for instrument data
+- JWT authentication stored in an HTTP-only cookie
+- Public viewer account creation from the login page
+- `admin`, `operator`, and `viewer` roles
+- Admin-only user management and audit-log views
+- Request validation with Zod and consistent API error responses
+- Helmet security headers, CORS, body-size limits, and login rate limiting
+- Light/dark theme support and responsive layout
 
----
+## Technology stack
 
-## Technology Stack
+### Client
 
-### Backend
-| Package | Purpose |
-|---------|---------|
-| **Express.js** | HTTP web framework |
-| **Mongoose** | MongoDB object modeling and schema validation |
-| **jsonwebtoken** | JWT creation and verification for auth |
-| **bcrypt** | Secure password hashing (cost factor 12) |
-| **zod** | Runtime request validation (body, query, params) |
-| **helmet** | Security headers (XSS, clickjacking, etc.) |
-| **cors** | CORS with explicit allowed origin |
-| **express-rate-limit** | Brute-force protection on login endpoint |
-| **cookie-parser** | HTTP-only cookie reading |
-| **pino** | Structured JSON logging (no console.log) |
-| **socket.io** | Real-time bidirectional communication |
-| **dotenv** | Environment variable loading |
+- React 19
+- Vite 8
+- React Router 7
+- Tailwind CSS 4
+- Axios
+- Socket.IO Client
+- Recharts
+- React Leaflet and Leaflet
+- React Hook Form and Zod
+- Vitest and React Testing Library
 
-### Frontend
-| Package | Purpose |
-|---------|---------|
-| **React 19** | UI component library |
-| **Vite** | Fast dev server and build tool |
-| **Tailwind CSS v4** | Utility-first CSS framework |
-| **React Router DOM v7** | Client-side routing |
-| **Axios** | HTTP client with cookie support |
-| **Recharts** | Composable charting library |
-| **socket.io-client** | Real-time socket connection |
-| **react-hook-form** | Performant form state management |
-| **@hookform/resolvers + zod** | Schema-based form validation |
-| **react-hot-toast** | Toast notifications |
+### Server
 
-### Testing
-| Package | Purpose |
-|---------|---------|
-| **Vitest** | Frontend unit test runner |
-| **@testing-library/react** | React component testing utilities |
-| **Jest** | Backend test runner |
-| **Supertest** | HTTP assertion for Express routes |
-
----
+- Node.js 20.19.0 or newer
+- Express 5
+- MongoDB with Mongoose
+- JSON Web Tokens and bcrypt
+- Socket.IO
+- Zod
+- Helmet, CORS, cookie-parser, and express-rate-limit
+- Pino structured logging
+- Jest and Supertest
 
 ## Architecture
 
-```
-UASS-Monitoring-System/
-â”œâ”€â”€ client/          # React frontend (Vite)
-â”œâ”€â”€ server/          # Node.js/Express backend
-â”œâ”€â”€ docs/            # API, architecture, and data format documentation
-â”œâ”€â”€ .gitignore
-â”œâ”€â”€ package.json     # Root convenience scripts
-â””â”€â”€ README.md
-```
-
-### Backend Architecture (MVC)
-
 ```text
-server/src/
-├── config/          # Environment validation, database connection
-├── controllers/     # Request handlers (auth, users, etc.)
-├── middleware/      # auth, validation, error handler
-├── models/          # Mongoose ODM schemas
-├── routes/          # Express route definitions
-├── services/        # Business logic
-├── validators/      # Zod validation schemas
-├── sockets/         # Socket.IO handlers
-├── collectors/      # Hardware/simulator data ingestion
-├── utils/           # Helpers (logger, response, ApiError)
-├── scripts/         # DB seeders
-├── app.js
-└── server.js
+Browser (React/Vite)
+        │
+        ├── REST API with HTTP-only JWT cookie
+        └── Authenticated Socket.IO connection
+                 │
+         Express + Socket.IO server
+                 │
+        ┌────────┼─────────┐
+        │        │         │
+     MongoDB  Simulator  LAN receivers
+                         UDP :5001
+                         TCP :5002
 ```
+
+The server is organized into routes, controllers, services, models,
+validators, middleware, and collectors. A collection session writes validated
+observations to MongoDB and broadcasts `collection:started`,
+`collection:stopped`, and `observation:new` events to authenticated clients.
+
+See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for the detailed design,
+[docs/API.md](./docs/API.md) for the REST API, and
+[docs/DATA_FORMAT.md](./docs/DATA_FORMAT.md) for observation and telemetry
+formats.
+
+## User roles
+
+| Role | Access |
+| --- | --- |
+| `admin` | All dashboards, collections, observations, user management, and audit logs |
+| `operator` | Dashboards, live monitoring, tracking, observations, and collection control |
+| `viewer` | Dashboards, live monitoring, tracking, and read-only observations |
+
+Authorization is enforced by the server as well as by the client navigation.
+The first admin account must be created with the interactive seed command.
+
+## Prerequisites
+
+- Node.js 20.19.0+
+- npm
+- A reachable MongoDB Atlas deployment
+- A modern browser
+
+The default development ports are:
+
+| Service | Port |
+| --- | ---: |
+| Vite client | `5173` |
+| Express API and Socket.IO | `5000` |
+| UDP instrument receiver | `5001` |
+| TCP instrument receiver | `5002` |
 
 ## Installation
 
-### Prerequisites
-- Node.js >= 20.0.0
-- MongoDB >= 6.0
+Clone the repository and install dependencies for both packages:
 
-### 1. Clone and install all dependencies
 ```bash
+git clone <repository-url>
+cd UASS-Monitoring-System
+
+cd server
 npm install
-npm run install:all
+
+cd ../client
+npm install
 ```
 
-### 2. Environment setup
-Copy the example environment files:
+On Windows PowerShell, the same commands work with the normal `cd` command.
+Keep the server and client in separate terminals when running them.
+
+### Configure the server
+
+Copy `server/.env.example` to `server/.env` and set values appropriate for
+your environment:
+
+```dotenv
+PORT=5000
+NODE_ENV=development
+MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-host>/<database>?retryWrites=true&w=majority
+MONGODB_DNS_SERVERS=8.8.8.8,1.1.1.1
+JWT_SECRET=replace_with_a_strong_random_secret_at_least_32_chars
+JWT_EXPIRES_IN=8h
+COOKIE_NAME=uass_auth
+CLIENT_URL=http://localhost:5173
+SIMULATOR_INTERVAL_MS=3000
+```
+
+`MONGODB_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `COOKIE_NAME`, and `CLIENT_URL`
+are required. In production, `JWT_SECRET` must contain at least 32
+characters. `MONGODB_DNS_SERVERS` is optional and defaults to Google DNS and
+Cloudflare DNS to support networks whose default resolver cannot resolve Atlas
+SRV records. Never commit `.env` files or real credentials.
+
+### Configure the client
+
+Copy `client/.env.example` to `client/.env`:
+
+```dotenv
+VITE_API_BASE_URL=http://localhost:5000/api/v1
+VITE_SOCKET_URL=http://localhost:5000
+```
+
+When using the Vite development server, `/api` is also proxied to
+`http://localhost:5000`.
+
+## Create the first admin user
+
+Make sure MongoDB is running, then run the interactive server seed script:
+
 ```bash
-cp server/.env.example server/.env
-cp client/.env.example client/.env
+cd server
+npm run seed
 ```
 
-### 3. Create the first admin account
-```bash
-npm run seed --prefix server
-```
+The script asks for the admin name, email, and password. Passwords must be at
+least eight characters. This command creates an administrator; it does not
+expose an HTTP endpoint.
 
-## Running the Application
-
-### Start the backend (development)
-```bash
-npm run dev:server
-```
-
-### Start the frontend (development)
-```bash
-npm run dev:client
-```
-
-## Running Tests
-
-### Backend tests
-```bash
-npm run test:server
-```
-
-### Frontend tests
+To insert sample observation records for development:
 
 ```bash
-npm run test:client
+npm run seed:observations
 ```
 
----
+## Run the application
 
-## API Overview
+Start the API and Socket.IO server:
 
-Base URL: `/api/v1`
+```bash
+cd server
+npm run dev
+```
 
-| Method | Endpoint | Auth | Role |
-|--------|----------|------|------|
-| POST | /auth/login | â€” | â€” |
-| POST | /auth/logout | âœ“ | any |
-| GET | /auth/me | âœ“ | any |
-| GET | /users | âœ“ | admin |
-| POST | /users | âœ“ | admin |
-| PATCH | /users/:id | âœ“ | admin |
-| DELETE | /users/:id | âœ“ | admin |
-| GET | /observations | âœ“ | any |
-| POST | /observations | âœ“ | admin, operator |
-| PATCH | /observations/:id | âœ“ | admin, operator |
-| DELETE | /observations/:id | âœ“ | admin |
-| GET | /observations/export | âœ“ | admin, operator |
-| GET | /collections | âœ“ | any |
-| POST | /collections/start | âœ“ | admin, operator |
-| POST | /collections/:id/stop | âœ“ | admin, operator |
-| GET | /dashboard/summary | âœ“ | any |
-| GET | /dashboard/latest | âœ“ | any |
-| GET | /audit-logs | âœ“ | admin |
+Start the React development server in a second terminal:
 
-Full documentation: [docs/API.md](docs/API.md)
+```bash
+cd client
+npm run dev
+```
 
----
+Open [http://localhost:5173](http://localhost:5173) and sign in with the
+admin account created above.
 
-## Simulated Data
+For a production-style client preview:
 
-The simulator generates plausible Upper Air Sounding observations using a simplified International Standard Atmosphere (ISA) model:
+```bash
+cd client
+npm run build
+npm run preview
+```
 
-- **Temperature:** Decreases at ~6.5Â°C/1,000m with Â±2Â°C noise
-- **Pressure:** Exponential decrease with altitude (barometric formula)
-- **Humidity:** Decreases with altitude, 0â€“100% RH
-- **Wind speed:** Increases with altitude toward jet stream level
-- **Wind direction:** Slowly drifting random walk
+The server can be started without nodemon using `npm start` from `server/`.
 
-All simulated observations have `source: "simulated"` and are clearly marked in the UI.
+## Deploying on Render
 
-The simulator cycles through altitudes from 0 to 30,000m in 500m steps, generating one observation per `SIMULATOR_INTERVAL_MS` (default: 3,000ms).
+Because this repository contains a separate frontend and backend, deploy it as
+two Render services backed by a MongoDB deployment such as MongoDB Atlas.
 
-See [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md) for the full data format specification.
+### 1. Deploy the backend API
 
----
+Create a **Web Service** from the repository with these settings:
 
-## Future Hardware Integration
+| Setting | Value |
+| --- | --- |
+| Root Directory | `server` |
+| Runtime | `Node` |
+| Environment Variable | `NODE_VERSION=20.19.0` |
+| Build Command | `npm install` |
+| Start Command | `npm start` |
 
-To connect real UASS hardware (RS41 radiosonde, TCP socket receiver, etc.), implement the `IDataSource` interface:
+Do not use `npm run dev` on Render; it starts nodemon and is intended only for
+local development. Render provides the `PORT` environment variable, which the
+server reads automatically.
 
-```js
-class MyHardwareSource {
-  start(sessionId, onObservation, onError) { /* read from hardware */ }
-  stop() { /* release resources */ }
-  getSourceName() { return 'rs41-serial'; }
+Add these backend environment variables:
+
+```dotenv
+NODE_ENV=production
+MONGODB_URI=<your-mongodb-atlas-connection-string>
+JWT_SECRET=<a-strong-random-secret-at-least-32-characters>
+JWT_EXPIRES_IN=8h
+COOKIE_NAME=uass_auth
+CLIENT_URL=https://<your-frontend-service>.onrender.com
+SIMULATOR_INTERVAL_MS=3000
+```
+
+After deployment, verify the service at:
+
+```text
+https://<your-backend-service>.onrender.com/health
+```
+
+It should return `{ "status": "ok" }`.
+
+### 2. Deploy the frontend
+
+Create a **Static Site** from the same repository with these settings:
+
+| Setting | Value |
+| --- | --- |
+| Root Directory | `client` |
+| Environment Variable | `NODE_VERSION=20.19.0` |
+| Build Command | `npm install && npm run build` |
+| Publish Directory | `dist` |
+
+Add these frontend environment variables before building:
+
+```dotenv
+VITE_API_BASE_URL=https://<your-backend-service>.onrender.com/api/v1
+VITE_SOCKET_URL=https://<your-backend-service>.onrender.com
+```
+
+Update the backend `CLIENT_URL` with the final frontend URL if Render assigns
+a different address. Since the frontend is a single-page application, add a
+Render rewrite from `/*` to `/index.html` when configuring client-side route
+refreshes.
+
+### 3. Create the first production user
+
+After the backend is deployed and connected to MongoDB, run the seed command
+from a local checkout using the production `MONGODB_URI`, or use a protected
+Render shell/job:
+
+```bash
+cd server
+npm install
+npm run seed
+```
+
+Never place production database credentials or the admin password in the
+repository or in the README.
+
+## Application routes
+
+| Route | Purpose | Roles |
+| --- | --- | --- |
+| `/login` | Sign in or create a viewer account | Public |
+| `/dashboard` | Summary and latest telemetry | All authenticated users |
+| `/monitoring` | Live observation monitor | All authenticated users |
+| `/tracking` | Flight/position tracking | All authenticated users |
+| `/observations` | Historical observation records | All authenticated users |
+| `/collections` | Start and stop collection sessions | Admin, operator |
+| `/users` | Manage users | Admin |
+| `/audit-logs` | Review audit activity | Admin |
+
+## REST API
+
+The API base URL is `http://localhost:5000/api/v1`. Authentication uses the
+HTTP-only cookie set by `POST /auth/login`.
+
+| Resource | Endpoints |
+| --- | --- |
+| Health | `GET /health` |
+| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me` |
+| Dashboard | `GET /dashboard/summary`, `GET /dashboard/latest` |
+| Users | `GET/POST /users`, `GET/PATCH/DELETE /users/:id` |
+| Observations | `GET/POST /observations`, `GET/PATCH/DELETE /observations/:id` |
+| Observation tools | `GET /observations/export`, `DELETE /observations/all`, `DELETE /observations/filter`, `POST /observations/:id/restore` |
+| Collections | `GET /collections`, `GET /collections/:id`, `POST /collections/start`, `POST /collections/:id/stop` |
+| Audit logs | `GET /audit-logs` |
+
+All protected endpoints require authentication. The API validates request
+parameters and bodies and returns errors in the following shape:
+
+```json
+{
+  "success": false,
+  "message": "Human-readable error message",
+  "details": []
 }
 ```
 
-Then replace `SimulatorDataSource` with your implementation in `collection.service.js`. The dashboard, Socket.IO broadcast, and database layer require no changes.
+For request parameters, response examples, pagination, filters, and role
+requirements, see [docs/API.md](./docs/API.md).
 
-See [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md) for the exact observation payload format.
+## Telemetry and data collection
 
----
+### Simulator
 
-## Security Notes
+Starting a collection from `/collections` creates one running simulated
+session. Only one session can run at a time. The simulator emits an observation
+every `SIMULATOR_INTERVAL_MS` milliseconds and cycles through altitudes from
+0 to 30,000 meters in 500-meter increments. It approximates temperature,
+pressure, humidity, wind speed, wind direction, latitude, and longitude.
 
-- **JWTs are never stored in localStorage** â€” HTTP-only cookies only
-- **Password hashing** uses bcrypt with cost factor 12
-- **Timing-safe login** â€” bcrypt runs even for non-existent users to prevent user enumeration
-- **Rate limiting** on `/auth/login` â€” 10 attempts per 15 minutes per IP
-- **Helmet** sets security headers (HSTS, XSS filter, content-type sniffing)
-- **CORS** allows only the configured `CLIENT_URL` origin
-- **Zod validation** on all request inputs â€” prevents NaN, Infinity, oversized payloads
-- **Mongoose `sanitizeFilter`** prevents NoSQL injection
-- **Audit logging** tracks all security-sensitive actions (no passwords or tokens logged)
-- **Role-based authorization** enforced on every protected backend route
-- Never commit `.env` files â€” only `.env.example` is tracked
+Stopping a session marks it `completed`. If the server restarts while a
+session is marked `running`, startup recovery marks that orphaned session
+`failed`.
 
----
+### LAN instrument receivers
 
-## Folder Structure
+The server starts listeners for external telemetry at startup:
+
+- UDP port `5001`: accepts JSON telemetry or comma-separated
+  `altitude,temperature,pressure,humidity,windSpeed,windDirection`
+- TCP port `5002`: accepts JSON telemetry frames
+
+Instrument observations are stored with `source: "instrument"` and are
+broadcast to connected clients. Use a device-specific adapter or gateway to
+translate a physical sensor protocol into the accepted payload format.
+
+Observation fields and valid ranges are documented in
+[docs/DATA_FORMAT.md](./docs/DATA_FORMAT.md).
+
+## Testing
+
+Run frontend tests:
+
+```bash
+cd client
+npm test
+```
+
+Run backend tests:
+
+```bash
+cd server
+npm test
+```
+
+The backend test suite requires `MONGODB_URI_TEST`, which should point to a
+separate MongoDB Atlas database so test cleanup cannot affect application data.
+The frontend tests run in a jsdom environment with the setup in
+`client/src/test/setup.js`.
+
+## Project structure
 
 ```text
 UASS-Monitoring-System/
 ├── client/
 │   ├── src/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   │   ├── charts/
-│   │   │   ├── common/
-│   │   │   └── layout/
-│   │   ├── context/
-│   │   ├── hooks/
-│   │   ├── pages/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── styles/
-│   │   ├── test/
-│   │   ├── utils/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── .env.example
+│   │   ├── components/       Reusable charts, layout, and UI components
+│   │   ├── context/          Auth, socket, theme, alerts, and data-source state
+│   │   ├── hooks/            Dashboard and observation data hooks
+│   │   ├── pages/            Application screens
+│   │   ├── routes/           Protected route handling
+│   │   ├── services/         REST API service modules
+│   │   └── test/             Vitest and React Testing Library setup
 │   └── package.json
 ├── server/
 │   ├── src/
-│   │   ├── collectors/
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── scripts/
-│   │   ├── services/
-│   │   ├── sockets/
-│   │   ├── utils/
-│   │   ├── validators/
-│   │   ├── app.js
-│   │   └── server.js
-│   ├── tests/
-│   ├── .env.example
+│   │   ├── collectors/       Simulator and UDP/TCP telemetry receivers
+│   │   ├── config/           Environment and database configuration
+│   │   ├── controllers/      HTTP request handlers
+│   │   ├── middleware/       Authentication, authorization, validation, errors
+│   │   ├── models/           Mongoose models
+│   │   ├── routes/           REST route definitions
+│   │   ├── services/         Domain and persistence operations
+│   │   └── sockets/          Authenticated Socket.IO server
+│   ├── tests/                Jest and Supertest tests
 │   └── package.json
-├── docs/
-├── scripts/
-│   └── maintenance/
-├── .gitignore
-├── package.json
-└── README.md
+├── docs/                     API, architecture, and data-format references
+├── scripts/maintenance/      One-off maintenance scripts
+└── migrate.mjs               Source-tree migration utility
 ```
 
+## Security notes
 
+- JWTs are sent in HTTP-only cookies rather than browser-accessible storage.
+- Configure `CLIENT_URL` to the exact trusted frontend origin.
+- Use a unique strong `JWT_SECRET` outside development.
+- Do not expose MongoDB or the telemetry listeners publicly without network
+  controls and an authenticated gateway.
+- The LAN receiver should be placed behind a trusted network boundary before
+  connecting physical equipment.
+- Do not commit `.env` files, passwords, tokens, or production database URLs.
+
+## Related documentation
+
+- [API reference](./docs/API.md)
+- [Architecture guide](./docs/ARCHITECTURE.md)
+- [Telemetry data format](./docs/DATA_FORMAT.md)
+- [Client package](./client/package.json)
+- [Server package](./server/package.json)

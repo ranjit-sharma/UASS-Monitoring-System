@@ -23,13 +23,19 @@ export function AuthProvider({ children }) {
     return userData;
   }, []);
 
+  const register = useCallback(async (details) => {
+    const userData = await authService.register(details);
+    setUser(userData);
+    return userData;
+  }, []);
+
   const logout = useCallback(async () => {
     await authService.logout();
     setUser(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -40,4 +46,3 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
-

@@ -1,5 +1,6 @@
 // src/config/env.js
 import 'dotenv/config';
+import dns from 'node:dns';
 
 const required = [
   'MONGODB_URI',
@@ -27,12 +28,22 @@ function validateEnv() {
 
 validateEnv();
 
+const mongoDnsServers = (process.env.MONGODB_DNS_SERVERS || '8.8.8.8,1.1.1.1')
+  .split(',')
+  .map((server) => server.trim())
+  .filter(Boolean);
+
+if (mongoDnsServers.length > 0) {
+  dns.setServers(mongoDnsServers);
+}
+
 export const env = {
   port: parseInt(process.env.PORT, 10) || 5000,
   nodeEnv: process.env.NODE_ENV || 'development',
   isProduction: process.env.NODE_ENV === 'production',
   mongoUri: process.env.MONGODB_URI,
   mongoUriTest: process.env.MONGODB_URI_TEST,
+  mongoDnsServers,
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN,
   cookieName: process.env.COOKIE_NAME,

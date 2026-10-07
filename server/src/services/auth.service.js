@@ -10,6 +10,7 @@ import { AUDIT_ACTIONS } from '../models/auditLog.model.js';
 // Pre-computed bcrypt hash used when no user is found, to ensure constant-time
 // password comparison and prevent timing-based user enumeration attacks.
 const DUMMY_HASH = '$2b$12$invalidhashusedfortimingprotectiononly00000000000000000';
+const BCRYPT_ROUNDS = 12;
 
 
 /**
@@ -76,3 +77,32 @@ export async function logoutUser(userId) {
   });
 }
 
+export async function registerUser({ name, email, password, role, ipAddress }) {
+  const existingUser = await User.findOne({ email }).select('_id');
+  if (existingUser) {
+    throw ApiError.conflict('An account with this email already exists');
+  }
+
+  const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
+  const assignedRole = env.isProduction ? 'viewer' : role;
+  const user = await User.create({
+    name,
+    email,
+    passwordHash,
+    role: assignedRole,
+    isActive: true,
+  });
+
+  await createAuditLog({
+    userId: user._id,
+    action: AUDIT_ACTIONS.USER_CREATED,
+    resource: 'users',
+    resourceId: user._id.toString(),
+    metadata: { email, role: assignedRole, registration: true, ipAddress },
+  });
+
+  return {
+    token: signToken(user._id),
+    user: user.toJSON(),
+  };
+}

@@ -171,14 +171,20 @@ body {
 .grad-text-primary { color: var(--accent-primary); }
 
 .grad-orb {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2rem;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+@media (min-width: 640px) {
+  .grad-orb {
+    width: 56px;
+    height: 56px;
+  }
 }
 .orb-temp { background: linear-gradient(135deg, var(--metric-temp), #ffb3b3); color: white; }
 .orb-pressure { background: linear-gradient(135deg, var(--metric-pressure), #b3e0ff); color: white; }

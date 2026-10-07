@@ -10,7 +10,14 @@ const mockLogin = vi.fn();
 const mockNavigate = vi.fn();
 
 vi.mock('../context/AuthContext.jsx', () => ({
-  useAuth: () => ({ login: mockLogin }),
+  useAuth: () => ({ login: mockLogin, register: vi.fn() }),
+}));
+
+vi.mock('../context/DataSourceContext.jsx', () => ({
+  useDataSource: () => ({
+    dataSourceMode: 'instrument',
+    setDataSourceMode: vi.fn(),
+  }),
 }));
 
 vi.mock('react-router-dom', async (importOriginal) => {
@@ -115,4 +122,3 @@ describe('LoginPage', () => {
     expect(button.disabled).toBe(true);
   });
 });
-
